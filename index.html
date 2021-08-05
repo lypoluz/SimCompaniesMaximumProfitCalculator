@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <style media="screen">
+            body {
+                display: flex;
+                background: #c9c9c9;
+                font-family: 'Merriweather', Arial, serif;
+            }
+            section {
+                display: inline-block;
+                position: relative;
+                border: solid #c0c0c0 4px;
+                border-radius: 12px;
+                background: #e5e5e5;
+                padding: 1em 2em 1em 2em;
+                box-shadow: inset 0 0 10px 5px #c9c9c9;
+                -webkit-tap-highlight-color: rgba(0,0,0,0);
+                margin: 10px;
+                color: #333;
+            }
+            section h4 {
+                margin: .4em;
+            }
+            form {
+                width: 190pt;
+                display: flex;
+                flex-direction: column;
+            }
+            form input {
+                width: 70pt;
+                text-align: right;
+                float: right;
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <section>
+            <h2>maximum profit calculator</h2>
+            <form novalidate id="prcalc">
+                <div>
+                    <label for="id">Item number</label>
+                    <input type="number" name="id" value="0">
+                </div>
+                <div>
+                    <label for="ia">Item amount</label>
+                    <input type="number" name="ia" value="0">
+                </div>
+                <div>
+                    <label for="SC">Source cost</label>
+                    <input type="number" name="SC" value="0">
+                </div>
+                <div>
+                    <label for="IQ">Item quality</label>
+                    <input type="number" name="IQ" value="0" min="0" max="5">
+                </div>
+                <div>
+                    <label for="SW">Wages</label>
+                    <input type="number" name="SW" value="1" min="1">
+                </div>
+                <div>
+                    <label for="SL">Shop level</label>
+                    <input type="number" name="SL" value="1" min="1" max="50">
+                </div>
+                <div>
+                    <label for="SSB">Sales speed bonus</label>
+                    <input type="number" name="SSB" value="0" min="0">
+                </div>
+            </form>
+            <hr>
+            <h4>Maximum profit</h4>
+            <h4 class="output1price">Price:</h4>
+            <h4 class="output1time">Time:</h4>
+            <hr>
+            <h4>Maximum profit per time</h4>
+            <h4 class="output2price">Price:</h4>
+            <h4 class="output2time">Time:</h4>
+        </section>
+        <!--<section>
+            <h2>Retail price/amount calculator</h2>
+            <form novalidate id="pacalc">
+                    <div>
+                        <label for="id">Item number</label>
+                        <input type="number" name="id" value="0">
+                    </div>
+                    <div>
+                        <label for="hours">Hours</label>
+                        <input type="number" name="hours" value="0" min="0">
+                    </div>
+                    <div>
+                        <label for="minutes">Minutes</label>
+                        <input type="number" name="minutes" value="0" min="0">
+                    </div>
+                    <div>
+                        <label for="IQ">Item quality</label>
+                        <input type="number" name="IQ" value="0" min="0" max="5">
+                    </div>
+                    <div>
+                        <label for="SL">Shop level</label>
+                        <input type="number" name="SL" value="1" min="1" max="50">
+                    </div>
+                    <div>
+                        <label for="SSB">Sales speed bonus</label>
+                        <input type="number" name="SSB" value="0" min="0">
+                    </div>
+            </form>
+        </section>-->
+
+        <script>
+
+        var form_prcalc = document.getElementById('prcalc');
+        form_prcalc.addEventListener('change', function() {
+            var data = formToData(form_prcalc);
+            getItemData(data["id"], function(itemdata) {
+                console.log(itemdata);
+                var saturation_market = parseFloat(itemdata["marketSaturation"]);
+                var arr = [...itemdata["retailModeling"].matchAll("[0-9]+.[0-9]+")];
+                var A = parseFloat(arr[0]);
+                var B = parseFloat(arr[3]);
+                var C = parseFloat(arr[1]);
+                var D = parseFloat(arr[5]);
+                var E = parseFloat(arr[6]);
+
+                var itemQuality = parseFloat(data["IQ"]);
+                var amount = parseFloat(data["ia"]);
+                var sourceCost = parseFloat(data["SC"]);
+                var wages = parseFloat(data["SW"]);
+                var salesBonus = parseFloat(data["SSB"]);
+                var shopLevel = parseFloat(data["SL"]);
+                var saturation = saturationFinal(saturation_market, itemQuality)
+
+                var price1 = (1800*shopLevel/wages/(1-salesBonus/100)/A/D+C-(saturation-.5)/B)/A;
+                var price2 = Math.sqrt(Math.pow(sourceCost, 2)+(Math.pow((saturation-.5)/B-C,2)+E/D+((saturation-.5)/B-C)*2*A*sourceCost)/Math.pow(A,2))+sourceCost;
+                getChildWithClass(form_prcalc.parentNode, "output1price").innerHTML = "Price: " + roundTwoDecimal(price1);
+                getChildWithClass(form_prcalc.parentNode, "output1time").innerHTML = "Time: " + timeToSellFormat(price1, amount, saturation, salesBonus, shopLevel, A, B, C, D, E);
+                getChildWithClass(form_prcalc.parentNode, "output2price").innerHTML = "Price: " + roundTwoDecimal(price2);
+                getChildWithClass(form_prcalc.parentNode, "output2time").innerHTML = "Time: " + timeToSellFormat(price2, amount, saturation, salesBonus, shopLevel, A, B, C, D, E);
+            });
+        });
+
+
+        function roundTwoDecimal(num) { return Math.floor((num + Number.EPSILON) * 100) / 100; } // floor yields better results here than round
+        function saturationFinal(saturationMarket, itemQuality) {return Math.max(-.38, saturationMarket-.24*itemQuality)}
+        function timeToSell(price, amount, saturation, salesBonus, shopLevel, A, B, C, D, E) {return (Math.pow(price*A+(saturation-.5)/B-C, 2)*D+E)*(1-salesBonus/100)*amount/shopLevel;}
+        function timeToSellFormat(price, amount, saturation, salesBonus, shopLevel, A, B, C, D, E) {
+            var sec = timeToSell(price, amount, saturation, salesBonus, shopLevel, A, B, C, D, E);
+            var str = "";
+            var hours = Math.floor(sec/3600);
+            var minutes = Math.floor((sec/60)%60);
+            var seconds = Math.round(sec%60);
+
+            if(hours != 0)
+                str = hours + "h " + minutes + "min";
+            else
+                str = minutes + "min " + seconds + "sec"
+
+            return str;
+        }
+
+        var formToData = function(form) {
+            var data = {};
+            var elements = form.elements;
+            for(var i = 0 ; i < elements.length ; i++){
+                var item = elements.item(i);
+                data[item.name] = item.value;
+            }
+            return data;
+        }
+
+        function getItemData(itemNumber, callback) {
+            var request = new XMLHttpRequest();
+            request.open('GET', "back.php?itemNumber="+itemNumber, true);
+            request.onload = function () {
+                if (request.readyState === 4 && request.status === 200) {
+                    callback(JSON.parse(this.responseText));
+                }
+            }
+            request.send();
+        };
+
+        function getChildWithClass(parent, className) {
+            var rchild = "";
+            parent.childNodes.forEach((child, c) => {
+                if(child.className == className)
+                    rchild = child;
+            });
+            return rchild;
+        }
+        </script>
+
+    </body>
+</html>
