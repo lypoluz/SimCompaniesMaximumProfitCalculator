@@ -80,35 +80,6 @@
             <h4 class="output2price">Price:</h4>
             <h4 class="output2time">Time:</h4>
         </section>
-        <!--<section>
-            <h2>Retail price/amount calculator</h2>
-            <form novalidate id="pacalc">
-                    <div>
-                        <label for="id">Item number</label>
-                        <input type="number" name="id" value="0">
-                    </div>
-                    <div>
-                        <label for="hours">Hours</label>
-                        <input type="number" name="hours" value="0" min="0">
-                    </div>
-                    <div>
-                        <label for="minutes">Minutes</label>
-                        <input type="number" name="minutes" value="0" min="0">
-                    </div>
-                    <div>
-                        <label for="IQ">Item quality</label>
-                        <input type="number" name="IQ" value="0" min="0" max="5">
-                    </div>
-                    <div>
-                        <label for="SL">Shop level</label>
-                        <input type="number" name="SL" value="1" min="1" max="50">
-                    </div>
-                    <div>
-                        <label for="SSB">Sales speed bonus</label>
-                        <input type="number" name="SSB" value="0" min="0">
-                    </div>
-            </form>
-        </section>-->
 
         <script>
 
@@ -133,8 +104,8 @@
                 var shopLevel = parseFloat(data["SL"]);
                 var saturation = saturationFinal(saturation_market, itemQuality)
 
-                var price1 = (1800*shopLevel/wages/(1-salesBonus/100)/A/D+C-(saturation-.5)/B)/A;
-                var price2 = Math.sqrt(Math.pow(sourceCost, 2)+(Math.pow((saturation-.5)/B-C,2)+E/D+((saturation-.5)/B-C)*2*A*sourceCost)/Math.pow(A,2))+sourceCost;
+                var price1 = (1800*shopLevel/wages/(1-salesBonus/100)/A/D+C-(saturation-.5)/B)/A;  //max profit
+                var price2 = Math.sqrt(Math.pow(sourceCost, 2)+(Math.pow((saturation-.5)/B-C,2)+E/D+((saturation-.5)/B-C)*2*A*sourceCost)/Math.pow(A,2))+sourceCost; //max profit per time
                 getChildWithClass(form_prcalc.parentNode, "output1price").innerHTML = "Price: " + roundTwoDecimal(price1);
                 getChildWithClass(form_prcalc.parentNode, "output1time").innerHTML = "Time: " + timeToSellFormat(price1, amount, saturation, salesBonus, shopLevel, A, B, C, D, E);
                 getChildWithClass(form_prcalc.parentNode, "output2price").innerHTML = "Price: " + roundTwoDecimal(price2);
@@ -145,7 +116,7 @@
 
         function roundTwoDecimal(num) { return Math.floor((num + Number.EPSILON) * 100) / 100; } // floor yields better results here than round
         function saturationFinal(saturationMarket, itemQuality) {return Math.max(-.38, saturationMarket-.24*itemQuality)}
-        function timeToSell(price, amount, saturation, salesBonus, shopLevel, A, B, C, D, E) {return (Math.pow(price*A+(saturation-.5)/B-C, 2)*D+E)*(1-salesBonus/100)*amount/shopLevel;}
+        function timeToSell(price, amount, saturation, salesBonus, shopLevel, A, B, C, D, E) {return (Math.pow(price*A+(saturation-.5)/B-C, 2)*D+E)*(1-(salesBonus/100))*amount/shopLevel;}
         function timeToSellFormat(price, amount, saturation, salesBonus, shopLevel, A, B, C, D, E) {
             var sec = timeToSell(price, amount, saturation, salesBonus, shopLevel, A, B, C, D, E);
             var str = "";
